@@ -1,0 +1,1 @@
+#Yeni Bulutlar grubu olarak Nesne projemizi yapıyoruz
