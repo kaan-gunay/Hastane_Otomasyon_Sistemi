@@ -25,6 +25,7 @@ class YatanHasta(Hasta):
     Hastanede yatan ve odası/servisi olan hasta tipi.
     """
 
+
     def __init__(
         self,
         ad: str,
