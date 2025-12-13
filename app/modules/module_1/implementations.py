@@ -1,47 +1,83 @@
-"""
-Modül 1 - Servisler ve Uygulama Sınıfları
-========================================
-
-Bu dosya, Hasta Yönetim Modülü için asıl "iş kurallarını"
-uygulayan sınıfları içerir.
-
-Buradaki amaç:
---------------
-- Alt seviye detaylardan (repository, veritabanı, vs.) bağımsız
-  bir "servis" katmanı oluşturmak
-- Modülü kullanan diğer parçaların (örneğin demo.py, başka modüller)
-  bu servis üzerinden işlem yapabilmesini sağlamak
-"""
-
 from __future__ import annotations
 
+from dataclasses import asdict, is_dataclass
 from statistics import mean
-from typing import List, Optional, Dict, Any, Iterable
+from typing import List, Optional, Dict, Any, Iterable, Tuple, Callable
 
-from app.modules.module_1.subclasses import (
-    YatanHasta,
-    AyaktaHasta,
-    AcilHasta,
-)
-from app.modules.module_1.repository import HafizaHastaDeposu
 from app.modules.module_1.base import Hasta
+from app.modules.module_1.subclasses import YatanHasta, AyaktaHasta, AcilHasta
+from app.modules.module_1.repository import HafizaHastaDeposu
+
+
+class HastaServisHatasi(Exception):
+    pass
+
+
+class HastaBulunamadi(HastaServisHatasi):
+    pass
+
+
+class GecersizHastaVerisi(HastaServisHatasi):
+    pass
 
 
 class HastaKayitServisi:
     """
-    Hasta kayıt, güncelleme, arama ve raporlama işlemlerini
-    gerçekleştiren servis sınıfı.
-
-    Bu sınıf doğrudan .repository içindeki depo sınıfına bağımlıdır.
-    İstersek ileride farklı bir depo (örneğin dosya tabanlı)
-    ile de çalışacak şekilde genişletebiliriz.
+    Hasta kayıt, güncelleme, arama ve raporlama işlemlerini gerçekleştiren servis sınıfı.
     """
 
     def __init__(self, depo: HafizaHastaDeposu) -> None:
         self.depo = depo
 
     # ------------------------------------------------------------------
-    # Yeni hasta oluşturma metotları
+    # Validasyon yardımcıları
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _validate_ad(ad: str) -> str:
+        if not isinstance(ad, str):
+            raise GecersizHastaVerisi("ad string olmalı.")
+        ad = ad.strip()
+        if len(ad) < 2:
+            raise GecersizHastaVerisi("ad en az 2 karakter olmalı.")
+        return ad
+
+    @staticmethod
+    def _validate_yas(yas: int) -> int:
+        if not isinstance(yas, int):
+            raise GecersizHastaVerisi("yas int olmalı.")
+        if yas < 0 or yas > 130:
+            raise GecersizHastaVerisi("yas 0-130 aralığında olmalı.")
+        return yas
+
+    @staticmethod
+    def _validate_cinsiyet(cinsiyet: str) -> str:
+        if not isinstance(cinsiyet, str):
+            raise GecersizHastaVerisi("cinsiyet string olmalı.")
+        c = cinsiyet.strip()
+        if not c:
+            raise GecersizHastaVerisi("cinsiyet boş olamaz.")
+        return c
+
+    @staticmethod
+    def _validate_aciliyet(aciliyet: int) -> int:
+        if not isinstance(aciliyet, int):
+            raise GecersizHastaVerisi("aciliyet_derecesi int olmalı.")
+        if aciliyet < 1 or aciliyet > 5:
+            raise GecersizHastaVerisi("aciliyet_derecesi 1-5 aralığında olmalı.")
+        return aciliyet
+
+    @staticmethod
+    def _validate_text(v: str, field: str) -> str:
+        if not isinstance(v, str):
+            raise GecersizHastaVerisi(f"{field} string olmalı.")
+        v = v.strip()
+        if not v:
+            raise GecersizHastaVerisi(f"{field} boş olamaz.")
+        return v
+
+    # ------------------------------------------------------------------
+    # Yeni hasta oluşturma
     # ------------------------------------------------------------------
 
     def yeni_yatan_hasta(
@@ -52,9 +88,12 @@ class HastaKayitServisi:
         oda_no: str,
         servis: str,
     ) -> YatanHasta:
-        """
-        Yeni bir yatan hasta oluşturup depoya kaydeder.
-        """
+        ad = self._validate_ad(ad)
+        yas = self._validate_yas(yas)
+        cinsiyet = self._validate_cinsiyet(cinsiyet)
+        oda_no = self._validate_text(oda_no, "oda_no")
+        servis = self._validate_text(servis, "servis")
+
         hasta = YatanHasta(
             ad=ad,
             yas=yas,
@@ -62,7 +101,7 @@ class HastaKayitServisi:
             oda_no=oda_no,
             servis=servis,
         )
-        return self.depo.ekle(hasta)  # type: ignore[return-value]
+        return self.depo.ekle(hasta)
 
     def yeni_ayakta_hasta(
         self,
@@ -71,177 +110,264 @@ class HastaKayitServisi:
         cinsiyet: str,
         poliklinik: str,
     ) -> AyaktaHasta:
-        """
-        Yeni bir ayakta hasta oluşturup depoya kaydeder.
-        """
+        ad = self._validate_ad(ad)
+        yas = self._validate_yas(yas)
+        cinsiyet = self._validate_cinsiyet(cinsiyet)
+        poliklinik = self._validate_text(poliklinik, "poliklinik")
+
         hasta = AyaktaHasta(
             ad=ad,
             yas=yas,
             cinsiyet=cinsiyet,
             poliklinik=poliklinik,
         )
-        return self.depo.ekle(hasta)  # type: ignore[return-value]
+        return self.depo.ekle(hasta)
 
     def yeni_acil_hasta(
         self,
         ad: str,
         yas: int,
         cinsiyet: str,
-        aciliyet: int,
+        aciliyet_derecesi: int,
     ) -> AcilHasta:
-        """
-        Yeni bir acil hasta oluşturup depoya kaydeder.
-        """
+        ad = self._validate_ad(ad)
+        yas = self._validate_yas(yas)
+        cinsiyet = self._validate_cinsiyet(cinsiyet)
+        aciliyet_derecesi = self._validate_aciliyet(aciliyet_derecesi)
+
         hasta = AcilHasta(
             ad=ad,
             yas=yas,
             cinsiyet=cinsiyet,
-            aciliyet_derecesi=aciliyet,
+            aciliyet_derecesi=aciliyet_derecesi,
         )
-        return self.depo.ekle(hasta)  # type: ignore[return-value]
+        return self.depo.ekle(hasta)
 
     # ------------------------------------------------------------------
-    # Güncelleme ve durum işlemleri
+    # Bul / Sil / Durum / Not
     # ------------------------------------------------------------------
+
+    def hasta_bul(self, hasta_id: str, raise_if_missing: bool = False) -> Optional[Hasta]:
+        hasta = self.depo.bul(hasta_id)
+        if hasta is None and raise_if_missing:
+            raise HastaBulunamadi(f"Hasta bulunamadı: {hasta_id}")
+        return hasta
 
     def durum_guncelle(self, hasta_id: str, yeni_durum: str) -> Optional[Hasta]:
-        """
-        Verilen hastanın durumunu değiştirir.
-        """
-        hasta = self.depo.bul(hasta_id)
+        yeni_durum = self._validate_text(yeni_durum, "yeni_durum")
+        hasta = self.hasta_bul(hasta_id)
         if hasta is None:
             return None
         hasta.durum_guncelle(yeni_durum)
         return hasta
 
     def taburcu_et(self, hasta_id: str) -> Optional[Hasta]:
-        """
-        Hastayı taburcu eder (durum alanını 'taburcu' yapar).
-        """
-        hasta = self.depo.bul(hasta_id)
+        hasta = self.hasta_bul(hasta_id)
         if hasta is None:
             return None
-        hasta.durum = "taburcu"
+        hasta.durum_guncelle("taburcu")
         return hasta
 
-    def toplu_taburcu(self, hasta_id_listesi: Iterable[str]) -> int:
-        """
-        Birden fazla hastayı tek seferde taburcu eder.
+    def hasta_sil(self, hasta_id: str) -> Optional[Hasta]:
+        return self.depo.sil(hasta_id)
 
-        Dönecek değer: Kaç hasta taburcu edildi?
-        """
-        sayac = 0
+    def hasta_not_ekle(self, hasta_id: str, not_metni: str) -> Optional[Hasta]:
+        not_metni = self._validate_text(not_metni, "not_metni")
+        hasta = self.hasta_bul(hasta_id)
+        if hasta is None:
+            return None
+        hasta.not_ekle(not_metni)
+        return hasta
+
+    def toplu_taburcu(self, hasta_id_listesi: List[str]) -> int:
+        adet = 0
         for hid in hasta_id_listesi:
-            sonuc = self.taburcu_et(hid)
-            if sonuc is not None:
-                sayac += 1
-        return sayac
+            if self.taburcu_et(hid) is not None:
+                adet += 1
+        return adet
+
+    def toplu_sil(self, hasta_id_listesi: Iterable[str]) -> int:
+        silinen = 0
+        for hid in hasta_id_listesi:
+            if self.hasta_sil(hid) is not None:
+                silinen += 1
+        return silinen
+
+    def toplu_durum_guncelle(self, hasta_id_listesi: Iterable[str], yeni_durum: str) -> int:
+        yeni_durum = self._validate_text(yeni_durum, "yeni_durum")
+        guncel = 0
+        for hid in hasta_id_listesi:
+            if self.durum_guncelle(hid, yeni_durum) is not None:
+                guncel += 1
+        return guncel
 
     # ------------------------------------------------------------------
-    # Arama ve listeleme
+    # Arama / Listeleme
     # ------------------------------------------------------------------
+
+    def tum_hastalar(self) -> List[Hasta]:
+        return self.depo.listele()
 
     def ara(self, metin: str) -> List[Hasta]:
-        """
-        Ad içinde geçen metne göre hasta arar.
-        """
+        metin = self._validate_text(metin, "metin")
         return self.depo.filtrele(metin, alan="ad")
 
     def duruma_gore_liste(self, durum: str) -> List[Hasta]:
-        """
-        Belirli bir duruma sahip tüm hastaları listeler.
-        """
+        durum = self._validate_text(durum, "durum")
         return self.depo.durumuna_gore(durum)
 
+    def yas_araliginda_liste(self, min_yas: Optional[int] = None, max_yas: Optional[int] = None) -> List[Hasta]:
+        if min_yas is not None:
+            min_yas = self._validate_yas(min_yas)
+        if max_yas is not None:
+            max_yas = self._validate_yas(max_yas)
+        return self.depo.yas_araligina_gore(min_yas=min_yas, max_yas=max_yas)
+
+    def cinsiyete_gore_liste(self, cinsiyet: str) -> List[Hasta]:
+        cinsiyet = self._validate_cinsiyet(cinsiyet)
+        return self.depo.ozellestirilmis_filtre(lambda h: h.cinsiyet == cinsiyet)
+
     def kritik_acil_hastalar(self) -> List[AcilHasta]:
-        """
-        Acil olup aciliyet derecesi 1 veya 2 olan hastaları listeler.
-        """
-        aciller = self.depo.tipine_gore(AcilHasta)
-        return [h for h in aciller if h.kritik_mi()]  # type: ignore[return-value]
+        tum = self.depo.tipine_gore(AcilHasta)
+        return [h for h in tum if h.kritik_mi()]
+
+    def en_yuksek_riskli_aciller(self, adet: int = 5) -> List[AcilHasta]:
+        if not isinstance(adet, int) or adet <= 0:
+            raise GecersizHastaVerisi("adet pozitif int olmalı.")
+        tum = self.depo.tipine_gore(AcilHasta)
+        tum.sort(key=lambda h: h.aciliyet_derecesi)
+        return tum[:adet]
 
     # ------------------------------------------------------------------
-    # İstatistik ve raporlar
+    # Özet / Detay çıktıları
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _safe_to_dict(obj: Any) -> Any:
+        if obj is None:
+            return None
+        if is_dataclass(obj):
+            return asdict(obj)
+        if isinstance(obj, (str, int, float, bool)):
+            return obj
+        if isinstance(obj, dict):
+            return dict(obj)
+        if isinstance(obj, (list, tuple)):
+            return [HastaKayitServisi._safe_to_dict(x) for x in obj]
+        return str(obj)
+
+    def hasta_ozet(self, hasta_id: str) -> Optional[str]:
+        h = self.hasta_bul(hasta_id)
+        if h is None:
+            return None
+        return f"{h.kisa_kimlik()} | Tip: {h.hasta_tipi()}"
+
+    def hasta_detay(self, hasta_id: str) -> Optional[Dict[str, Any]]:
+        h = self.hasta_bul(hasta_id)
+        if h is None:
+            return None
+        return {
+            "id": h.id,
+            "ad": h.ad,
+            "yas": h.yas,
+            "cinsiyet": h.cinsiyet,
+            "durum": h.durum,
+            "tip": h.hasta_tipi(),
+            "yas_grubu": h.yas_grubu(),
+            "ozet": h.ozet_bilgi(),
+            "iletisim": self._safe_to_dict(h.iletisim),
+            "acil_kisi": self._safe_to_dict(h.acil_kisi),
+            "son_not": h.son_not(),
+            "not_sayisi": len(h.tum_notlar()),
+            "olusturulma_zamani": h.olusturulma_zamani.isoformat(),
+            "guncellenme_zamani": h.guncellenme_zamani.isoformat(),
+        }
+
+    # ------------------------------------------------------------------
+    # İstatistik / Rapor
     # ------------------------------------------------------------------
 
     def yas_ortalamasi(self) -> float:
-        """
-        Tüm hastalar için yaş ortalamasını döndürür.
-        """
         hastalar = self.depo.listele()
         if not hastalar:
             return 0.0
         return float(mean(h.yas for h in hastalar))
 
-    def durum_ozeti(self) -> Dict[str, int]:
-        """
-        Depodaki duruma göre sayım bilgisini döndürür.
-        """
-        return self.depo.duruma_gore_sayim()
+    def servis_poliklinik_raporu(self) -> Dict[str, int]:
+        sayac: Dict[str, int] = {}
+        for h in self.depo.listele():
+            if isinstance(h, YatanHasta):
+                key = f"Servis:{h.servis}"
+            elif isinstance(h, AyaktaHasta):
+                key = f"Poliklinik:{h.poliklinik}"
+            else:
+                key = "Acil"
+            sayac[key] = sayac.get(key, 0) + 1
+        return sayac
 
-    def yas_grubu_ozeti(self) -> Dict[str, int]:
-        """
-        Yaş grubu bazlı özet (Çocuk, Genç, Yetişkin, Yaşlı) döndürür.
-        """
-        return self.depo.yas_grubu_ozeti()
+    def kritik_hasta_raporu(self) -> Dict[str, Any]:
+        aciller = self.depo.tipine_gore(AcilHasta)
+        kritikler = [h for h in aciller if h.kritik_mi()]
+        return {
+            "toplam_acil": len(aciller),
+            "kritik_acil": len(kritikler),
+            "kritik_idler": [h.id for h in kritikler],
+        }
+
+    def istatistik_uret(self) -> Dict[str, Any]:
+        hastalar = self.depo.listele()
+        return {
+            "toplam": len(hastalar),
+            "durum_sayim": self.depo.duruma_gore_sayim(),
+            "yas_gruplari": self.depo.yas_grubu_ozeti(),
+            "cinsiyet_sayim": self.depo.cinsiyete_gore_sayim(),
+            "yas_ortalama": self.yas_ortalamasi(),
+            "kritik_rapor": self.kritik_hasta_raporu(),
+            "servis_poliklinik": self.servis_poliklinik_raporu(),
+        }
 
     def rapor_uret(self) -> str:
-        """
-        Basit, metin tabanlı bir rapor üretir.
+        satirlar: List[str] = []
+        satirlar.append("HASTA YÖNETİM MODÜLÜ RAPORU")
+        satirlar.append("-" * 40)
+        satirlar.append(f"Toplam hasta sayısı: {self.depo.sayim()}")
+        satirlar.append(f"Genel yaş ortalaması: {self.yas_ortalamasi():.1f} yaş")
 
-        Bu fonksiyon satır sayısını da artırır; aynı zamanda
-        öğretmen rapor örneği görmek isterse kullanılabilir.
-        """
-        toplam = self.depo.sayim()
-        durumlar = self.durum_ozeti()
-        yas_gruplari = self.yas_grubu_ozeti()
-
-        satirlar = []
-        satirlar.append("=== HASTA YÖNETİM MODÜLÜ RAPORU ===")
-        satirlar.append(f"Toplam hasta sayısı: {toplam}")
+        durum_sayim = self.depo.duruma_gore_sayim()
         satirlar.append("")
         satirlar.append("Durumlara göre dağılım:")
-        for durum, adet in durumlar.items():
-            satirlar.append(f"  - {durum}: {adet} hasta")
+        for durum, adet in sorted(durum_sayim.items(), key=lambda x: x[0]):
+            satirlar.append(f"  - {durum}: {adet}")
+
+        yas_gruplari = self.depo.yas_grubu_ozeti()
         satirlar.append("")
         satirlar.append("Yaş gruplarına göre dağılım:")
-        for grup, adet in yas_gruplari.items():
-            satirlar.append(f"  - {grup}: {adet} hasta")
+        for grup, adet in sorted(yas_gruplari.items(), key=lambda x: x[0]):
+            satirlar.append(f"  - {grup}: {adet}")
+
+        sp = self.servis_poliklinik_raporu()
         satirlar.append("")
-        satirlar.append(
-            f"Genel yaş ortalaması: {self.yas_ortalamasi():.1f} yaş"
-        )
+        satirlar.append("Servis/Poliklinik/Acil dağılımı:")
+        for k, v in sorted(sp.items(), key=lambda x: x[0]):
+            satirlar.append(f"  - {k}: {v}")
+
+        kritik = self.kritik_hasta_raporu()
+        satirlar.append("")
+        satirlar.append(f"Acil hastalar: {kritik['toplam_acil']}")
+        satirlar.append(f"Kritik acil: {kritik['kritik_acil']}")
+
+        riskliler = self.en_yuksek_riskli_aciller(adet=min(5, kritik["toplam_acil"] or 0)) if kritik["toplam_acil"] else []
+        if riskliler:
+            satirlar.append("")
+            satirlar.append("En yüksek riskli aciller (aciliyet düşük = daha kritik):")
+            for h in riskliler:
+                satirlar.append(f"  - {h.id} | {h.ad} | seviye {h.aciliyet_derecesi}")
 
         return "\n".join(satirlar)
 
     # ------------------------------------------------------------------
-    # Yardımcı get metotları
-    # ------------------------------------------------------------------
-
-    def tum_hastalar(self) -> List[Hasta]:
-        """
-        Depodaki tüm hastaların listesini verir.
-        """
-        return self.depo.listele()
-
-    def hasta_bul(self, hasta_id: str) -> Optional[Hasta]:
-        """
-        ID ile hasta bulma kısayolu.
-        """
-        return self.depo.bul(hasta_id)
-
-    def hasta_sil(self, hasta_id: str) -> Optional[Hasta]:
-        """
-        ID ile hasta silme kısayolu.
-        """
-        return self.depo.sil(hasta_id)
-
-    # ------------------------------------------------------------------
-    # Dışa aktarım için küçük yardımcı
+    # Dışa aktarım
     # ------------------------------------------------------------------
 
     def json_icin_liste(self) -> List[Dict[str, Any]]:
-        """
-        Depodaki tüm hastaları sözlük listesi olarak döndürür.
-        """
         return self.depo.json_icin_liste()
