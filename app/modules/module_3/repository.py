@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional , Optional
+from typing import List, Optional
 
-from .base import  PatientBase, PatientStatus, PatientUrgency
+from .base import  PatientBase
 
 
 class PatientRepository:
@@ -21,7 +21,7 @@ class PatientRepository:
             if patient.patient_id == patient_id:
                 return patient
             return None
-        ,
+
 
 
 
