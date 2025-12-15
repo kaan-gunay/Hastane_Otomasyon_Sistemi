@@ -53,14 +53,7 @@ class RandevuKimligi:
 # Randevuyu temsil eden soyut sınıfı tanımlar.
 class AppointmentBase(ABC):
     # Randevu nesnesini başlatır.
-    def __init__(
-        self,
-        randevu_id: str,
-        hasta_id: str,
-        doktor_adi: str,
-        tarih_saat: datetime,
-        durum: Optional[str] = None,
-    ) -> None:
+    def __init__( self, randevu_id: str, hasta_id: str, doktor_adi: str, tarih_saat: datetime, durum: Optional[str] = None, ) -> None:
         RandevuKimligi.id_dogrula(randevu_id)
         self._randevu_id = randevu_id.strip()
         self._hasta_id = (hasta_id or "").strip()
@@ -68,6 +61,7 @@ class AppointmentBase(ABC):
         self._tarih_saat = tarih_saat
         self._durum = RandevuDurumu.normalize(durum or RandevuDurumu.varsayilan())
         self._tarih_dogrula(self._tarih_saat)
+        self._iptal_nedeni = ""
         if not self._hasta_id:
             raise ValueError("hasta_id boş olamaz.")
         if not self._doktor_adi:
@@ -146,7 +140,7 @@ class AppointmentBase(ABC):
 
     # Tarih-saat değerinin geçerliliğini kontrol eder.
     @staticmethod
-    def _tarih_dogrula(tarih_saat: datetime) -> None:
+    def _tarih_dogrula(tarih_saat: object) -> None:
         if not isinstance(tarih_saat, datetime):
             raise ValueError("tarih_saat datetime olmalıdır.")
         if tarih_saat < datetime.now() - timedelta(days=1):
