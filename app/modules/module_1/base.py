@@ -6,16 +6,16 @@ Bu dosya, tüm hasta tipleri için kullanılacak TEMEL sınıfları içerir.
 
 - Hasta sınıfı (soyut sınıf, tüm hastaların ortak özellikleri)
 - İlgili yardımcı veri yapıları (iletişim bilgisi, acil durum kişisi)
-- Küçük araç metotlar (yaş grubu, kısa kimlik, not ekleme vb.)
+- Küçük araç metotlar (yaş grubu, kısa kimlik, not ekleme, takip kaydı vb.)
 """
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict, is_dataclass
 from datetime import datetime, date
+from typing import List, Optional, Dict, Any
 import uuid
-from typing import List, Optional
 
 
 # ---------------------------------------------------------------------------
@@ -54,13 +54,16 @@ class Hasta(ABC):
 
     Ortak alanlar:
     - id, ad, yas, cinsiyet, durum
+    - tc_kimlik_no, dogum_tarihi
     - oluşturulma/güncellenme zamanı
     - iletişim ve acil durum kişisi
+    - notlar + takip kayıtları
 
     Ortak metotlar:
     - durum_guncelle
     - not_ekle / tum_notlar / son_not
-    - yas_grubu, kisa_kimlik
+    - takip_guncelle / tum_takip / son_takip
+    - yas_grubu, kisa_kimlik, to_dict
     """
 
     _hasta_sayaci: int = 0
@@ -68,7 +71,7 @@ class Hasta(ABC):
     def __init__(
         self,
         ad: str,
-        yas: int,
+        yas: Optional[int],
         cinsiyet: str,
         durum: str = "kayıtlı",
         tc_kimlik_no: Optional[str] = None,
@@ -78,13 +81,18 @@ class Hasta(ABC):
     ) -> None:
         self.id: str = str(uuid.uuid4())
 
-        self.ad: str = ad
-        self.yas: int = yas
-        self.cinsiyet: str = cinsiyet
-        self.durum: str = durum
+        self.ad: str = (ad or "").strip()
+        self.cinsiyet: str = (cinsiyet or "").strip()
+        self.durum: str = (durum or "").strip() or "kayıtlı"
 
-        self.tc_kimlik_no: Optional[str] = tc_kimlik_no
+        self.tc_kimlik_no: Optional[str] = (tc_kimlik_no or "").strip() or None
         self.dogum_tarihi: Optional[date] = dogum_tarihi
+
+        # Yaş: dogum_tarihi varsa otomatik hesapla, yoksa verilen yas'ı kullan
+        if dogum_tarihi is not None:
+            self.yas: int = self.yas_hesapla(dogum_tarihi)
+        else:
+            self.yas = int(yas) if isinstance(yas, int) else int(yas or 0)
 
         self.iletisim: IletisimBilgisi = iletisim or IletisimBilgisi(
             telefon="Bilinmiyor",
@@ -97,6 +105,7 @@ class Hasta(ABC):
         self.guncellenme_zamani: datetime = datetime.now()
 
         self._notlar: List[str] = []
+        self._takip: List[str] = []
 
         Hasta._hasta_sayaci += 1
 
@@ -106,16 +115,10 @@ class Hasta(ABC):
 
     @abstractmethod
     def hasta_tipi(self) -> str:
-        """
-        Hastanın tipini döndürür (örn: Yatan Hasta, Ayakta Hasta, Acil Hasta).
-        """
         raise NotImplementedError
 
     @abstractmethod
     def ozet_bilgi(self) -> str:
-        """
-        Hastaya özgü kısa özet string döndürür.
-        """
         raise NotImplementedError
 
     # ------------------------------------------------------------------
@@ -123,24 +126,42 @@ class Hasta(ABC):
     # ------------------------------------------------------------------
 
     def durum_guncelle(self, yeni_durum: str) -> None:
-        self.durum = yeni_durum
-        self.guncellenme_zamani = datetime.now()
+        self.durum = (yeni_durum or "").strip() or self.durum
+        self.takip_guncelle(f"durum_guncelle:{self.durum}")
 
     def not_ekle(self, metin: str) -> None:
         zaman = datetime.now().strftime("%d.%m.%Y %H:%M")
-        self._notlar.append(f"[{zaman}] {metin}")
-        self.guncellenme_zamani = datetime.now()
+        m = (metin or "").strip()
+        if not m:
+            return
+        self._notlar.append(f"[{zaman}] {m}")
+        self.takip_guncelle("not_ekle")
 
     def tum_notlar(self) -> List[str]:
         return list(self._notlar)
 
     def son_not(self) -> Optional[str]:
-        if not self._notlar:
-            return None
-        return self._notlar[-1]
+        return self._notlar[-1] if self._notlar else None
+
+    # ✅ subclasses.py içinde çağırdığın metot
+    def takip_guncelle(self, olay: str) -> None:
+        zaman = datetime.now().strftime("%d.%m.%Y %H:%M")
+        o = (olay or "").strip() or "guncelleme"
+        self._takip.append(f"[{zaman}] {o}")
+        self.guncellenme_zamani = datetime.now()
+
+    def tum_takip(self) -> List[str]:
+        return list(self._takip)
+
+    def son_takip(self) -> Optional[str]:
+        return self._takip[-1] if self._takip else None
 
     def kisa_kimlik(self) -> str:
-        return f"{self.ad} | {self.cinsiyet}, {self.yas} yaş | Durum: {self.durum}"
+        tc = self.tc_kimlik_no if self.tc_kimlik_no else "-"
+        return (
+            f"{self.ad} | {self.cinsiyet}, {self.yas} yaş ({self.yas_grubu()}) | "
+            f"Durum: {self.durum} | TC: {tc}"
+        )
 
     def yas_grubu(self) -> str:
         if self.yas < 18:
@@ -150,6 +171,55 @@ class Hasta(ABC):
         if self.yas < 60:
             return "Yetişkin"
         return "Yaşlı"
+
+    # ------------------------------------------------------------------
+    # Dışa aktarım (base + subclass birleşik)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _safe(obj: Any) -> Any:
+        if obj is None:
+            return None
+        if is_dataclass(obj):
+            return asdict(obj)
+        if isinstance(obj, (str, int, float, bool)):
+            return obj
+        if isinstance(obj, (list, tuple)):
+            return [Hasta._safe(x) for x in obj]
+        if isinstance(obj, dict):
+            return {k: Hasta._safe(v) for k, v in obj.items()}
+        return str(obj)
+
+    def to_dict(self) -> Dict[str, Any]:
+        data: Dict[str, Any] = {
+            "id": self.id,
+            "ad": self.ad,
+            "yas": self.yas,
+            "cinsiyet": self.cinsiyet,
+            "durum": self.durum,
+            "tc_kimlik_no": self.tc_kimlik_no,
+            "dogum_tarihi": self.dogum_tarihi.isoformat() if self.dogum_tarihi else None,
+            "tip": self.hasta_tipi(),
+            "ozet": self.ozet_bilgi(),
+            "iletisim": self._safe(self.iletisim),
+            "acil_kisi": self._safe(self.acil_kisi),
+            "notlar": self._safe(self._notlar),
+            "takip": self._safe(self._takip),
+            "olusturulma_zamani": self.olusturulma_zamani.isoformat(timespec="seconds"),
+            "guncellenme_zamani": self.guncellenme_zamani.isoformat(timespec="seconds"),
+        }
+
+        # subclasses.py tarafında varsa ek alanlar birleştir
+        ek = getattr(self, "_ek_alanlar_dict", None)
+        if callable(ek):
+            try:
+                extra = ek()
+                if isinstance(extra, dict):
+                    data.update(extra)
+            except Exception:
+                pass
+
+        return data
 
     # ------------------------------------------------------------------
     # Class / static metot örnekleri
@@ -179,4 +249,5 @@ class Hasta(ABC):
         return f"<{self.__class__.__name__} {self.id} {self.ad!r}>"
 
     def __str__(self) -> str:
-        return f"{self.ad} ({self.hasta_tipi()}) - Durum: {self.durum}"
+        # ✅ demo.py print(h) dediğinde burası çalışır → base değişiklikleri çıktıya yansır
+        return f"{self.ad} ({self.hasta_tipi()}) - Durum: {self.durum} | Yaş: {self.yas} ({self.yas_grubu()})"
