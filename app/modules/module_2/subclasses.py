@@ -12,16 +12,7 @@ from .base import AppointmentBase
 # Rutin randevuyu temsil eder.
 class RoutineAppointment(AppointmentBase):
     # Rutin randevuyu başlatır.
-    def __init__(
-        self,
-        randevu_id: str,
-        hasta_id: str,
-        doktor_adi: str,
-        tarih_saat: datetime,
-        klinik: str,
-        sure_dk: int = 20,
-        durum: Optional[str] = None,
-    ) -> None:
+    def __init__( self, randevu_id: str, hasta_id: str, doktor_adi: str, tarih_saat: datetime, klinik: str, sure_dk: int = 20, durum: Optional[str] = None, ) -> None:
         super().__init__(randevu_id, hasta_id, doktor_adi, tarih_saat, durum=durum)
         self._klinik = (klinik or "").strip()
         self._sure_dk = int(sure_dk)
@@ -56,29 +47,12 @@ class RoutineAppointment(AppointmentBase):
 
     # Sözlüğe çevirir.
     def sozluge(self) -> Dict[str, Any]:
-        return {
-            "tip": "routine",
-            "randevu_id": self.randevu_id,
-            "hasta_id": self.hasta_id,
-            "doktor_adi": self.doktor_adi,
-            "tarih_saat": self.tarih_saat.isoformat(),
-            "durum": self.durum,
-            "klinik": self.klinik,
-            "sure_dk": self.sure_dk,
-        }
+        return { "tip": "routine", "randevu_id": self.randevu_id, "hasta_id": self.hasta_id, "doktor_adi": self.doktor_adi, "tarih_saat": self.tarih_saat.isoformat(), "durum": self.durum, "klinik": self.klinik, "sure_dk": self.sure_dk, }
 
     # Sözlükten üretir.
     @classmethod
     def sozlukten(cls, veri: Dict[str, Any]) -> "RoutineAppointment":
-        return cls(
-            randevu_id=str(veri["randevu_id"]),
-            hasta_id=str(veri["hasta_id"]),
-            doktor_adi=str(veri["doktor_adi"]),
-            tarih_saat=datetime.fromisoformat(veri["tarih_saat"]),
-            klinik=str(veri["klinik"]),
-            sure_dk=int(veri.get("sure_dk", 20)),
-            durum=veri.get("durum"),
-        )
+        return cls( randevu_id=str(veri["randevu_id"]), hasta_id=str(veri["hasta_id"]), doktor_adi=str(veri["doktor_adi"]), tarih_saat=datetime.fromisoformat(veri["tarih_saat"]), klinik=str(veri["klinik"]), sure_dk=int(veri.get("sure_dk", 20)), durum=veri.get("durum"), )
 
     # Klinik adını normalize eder.
     @staticmethod
@@ -89,16 +63,7 @@ class RoutineAppointment(AppointmentBase):
 # Acil randevuyu temsil eder.
 class EmergencyAppointment(AppointmentBase):
     # Acil randevuyu başlatır.
-    def __init__(
-        self,
-        randevu_id: str,
-        hasta_id: str,
-        doktor_adi: str,
-        tarih_saat: datetime,
-        acil_kodu: str,
-        oncelik: int = 5,
-        durum: Optional[str] = None,
-    ) -> None:
+    def __init__( self, randevu_id: str, hasta_id: str, doktor_adi: str, tarih_saat: datetime, acil_kodu: str, oncelik: int = 5, durum: Optional[str] = None, ) -> None:
         super().__init__(randevu_id, hasta_id, doktor_adi, tarih_saat, durum=durum)
         self._acil_kodu = (acil_kodu or "").strip().upper()
         self._oncelik = int(oncelik)
@@ -136,29 +101,12 @@ class EmergencyAppointment(AppointmentBase):
 
     # Sözlüğe çevirir.
     def sozluge(self) -> Dict[str, Any]:
-        return {
-            "tip": "emergency",
-            "randevu_id": self.randevu_id,
-            "hasta_id": self.hasta_id,
-            "doktor_adi": self.doktor_adi,
-            "tarih_saat": self.tarih_saat.isoformat(),
-            "durum": self.durum,
-            "acil_kodu": self.acil_kodu,
-            "oncelik": self.oncelik,
-        }
+        return { "tip": "emergency", "randevu_id": self.randevu_id, "hasta_id": self.hasta_id, "doktor_adi": self.doktor_adi, "tarih_saat": self.tarih_saat.isoformat(), "durum": self.durum, "acil_kodu": self.acil_kodu, "oncelik": self.oncelik, }
 
     # Sözlükten üretir.
     @classmethod
     def sozlukten(cls, veri: Dict[str, Any]) -> "EmergencyAppointment":
-        return cls(
-            randevu_id=str(veri["randevu_id"]),
-            hasta_id=str(veri["hasta_id"]),
-            doktor_adi=str(veri["doktor_adi"]),
-            tarih_saat=datetime.fromisoformat(veri["tarih_saat"]),
-            acil_kodu=str(veri["acil_kodu"]),
-            oncelik=int(veri.get("oncelik", 5)),
-            durum=veri.get("durum"),
-        )
+        return cls( randevu_id=str(veri["randevu_id"]), hasta_id=str(veri["hasta_id"]), doktor_adi=str(veri["doktor_adi"]), tarih_saat=datetime.fromisoformat(veri["tarih_saat"]), acil_kodu=str(veri["acil_kodu"]), oncelik=int(veri.get("oncelik", 5)), durum=veri.get("durum"), )
 
     # Acil kodunu normalize eder.
     @staticmethod
@@ -169,16 +117,7 @@ class EmergencyAppointment(AppointmentBase):
 # Online randevuyu temsil eder.
 class OnlineAppointment(AppointmentBase):
     # Online randevuyu başlatır.
-    def __init__(
-        self,
-        randevu_id: str,
-        hasta_id: str,
-        doktor_adi: str,
-        tarih_saat: datetime,
-        platform: str,
-        baglanti: str,
-        durum: Optional[str] = None,
-    ) -> None:
+    def __init__( self, randevu_id: str, hasta_id: str, doktor_adi: str, tarih_saat: datetime, platform: str, baglanti: str, durum: Optional[str] = None, ) -> None:
         super().__init__(randevu_id, hasta_id, doktor_adi, tarih_saat, durum=durum)
         self._platform = (platform or "").strip()
         self._baglanti = (baglanti or "").strip()
@@ -215,29 +154,12 @@ class OnlineAppointment(AppointmentBase):
 
     # Sözlüğe çevirir.
     def sozluge(self) -> Dict[str, Any]:
-        return {
-            "tip": "online",
-            "randevu_id": self.randevu_id,
-            "hasta_id": self.hasta_id,
-            "doktor_adi": self.doktor_adi,
-            "tarih_saat": self.tarih_saat.isoformat(),
-            "durum": self.durum,
-            "platform": self.platform,
-            "baglanti": self.baglanti,
-        }
+        return { "tip": "online", "randevu_id": self.randevu_id, "hasta_id": self.hasta_id, "doktor_adi": self.doktor_adi, "tarih_saat": self.tarih_saat.isoformat(), "durum": self.durum, "platform": self.platform, "baglanti": self.baglanti, }
 
     # Sözlükten üretir.
     @classmethod
     def sozlukten(cls, veri: Dict[str, Any]) -> "OnlineAppointment":
-        return cls(
-            randevu_id=str(veri["randevu_id"]),
-            hasta_id=str(veri["hasta_id"]),
-            doktor_adi=str(veri["doktor_adi"]),
-            tarih_saat=datetime.fromisoformat(veri["tarih_saat"]),
-            platform=str(veri["platform"]),
-            baglanti=str(veri["baglanti"]),
-            durum=veri.get("durum"),
-        )
+        return cls( randevu_id=str(veri["randevu_id"]), hasta_id=str(veri["hasta_id"]), doktor_adi=str(veri["doktor_adi"]), tarih_saat=datetime.fromisoformat(veri["tarih_saat"]), platform=str(veri["platform"]), baglanti=str(veri["baglanti"]), durum=veri.get("durum"), )
 
     # Platformu normalize eder.
     @staticmethod
