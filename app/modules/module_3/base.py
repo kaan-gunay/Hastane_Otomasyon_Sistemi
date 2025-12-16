@@ -6,11 +6,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Optional, Tuple
 
-
+"""Testin süreç durumları"""
 class TestStatus(str, Enum):
-    """
-    Testin süreç durumları.
-    """
     ORDERED = "ORDERED"
     COLLECTED = "COLLECTED"
     IN_PROGRESS = "IN_PROGRESS"
@@ -18,22 +15,17 @@ class TestStatus(str, Enum):
     CANCELLED = "CANCELLED"
 
 
+"""Sonuç değerlendirme """
 class ResultStatus(str, Enum):
-    """
-    Sonuç değerlendirme (kritik / normal) amaçlı yardımcı etiket.
-    """
     UNKNOWN = "UNKNOWN"
     NORMAL = "NORMAL"
     BORDERLINE = "BORDERLINE"
     CRITICAL = "CRITICAL"
 
 
+"""Değer aralığı"""
 @dataclass(frozen=True)
 class ReferenceRange:
-    """
-    Sayısal sonuçlar için referans aralığı.
-    Örn: Hemoglobin 12-16 g/dL
-    """
     low: float
     high: float
     unit: str
@@ -45,17 +37,8 @@ class ReferenceRange:
         return f"{self.low}-{self.high} {self.unit}"
 
 
+"""Hasta Bilgileri"""
 class LabTest(ABC):
-    """
-    Base Class: LabTest
-
-    Yönerge: base.py içinde ABC + abstractmethod + en az 2 abstract metot.
-    Test kimliği, hasta kimliği, test türü, sonuç, durum gibi ortak alanlar burada.
-
-    Not:
-    - result alanı farklı test türlerinde farklı yapıdadır (sayısal, metin, rapor).
-    - subclasses bu davranışı özelleştirir.
-    """
 
     def __init__(
         self,
@@ -83,9 +66,7 @@ class LabTest(ABC):
         self._audit: list[dict] = []
         self._log("CREATE", {"status": self._status.value})
 
-    # ----------------------------
-    # Properties (encapsulation)
-    # ----------------------------
+
     @property
     def test_id(self) -> int:
         return self._test_id
@@ -130,16 +111,13 @@ class LabTest(ABC):
     def result_status(self) -> ResultStatus:
         return self._result_status
 
-    # ----------------------------
-    # Common operations
-    # ----------------------------
+
+    """Örnek alma."""
     def collect_sample(self, when: Optional[datetime] = None) -> None:
-        """
-        Örnek alınması.
-        """
+
         self._ensure_not_cancelled()
         if self._status in (TestStatus.CANCELLED, TestStatus.COMPLETED):
-            raise ValueError("Tamamlanmış/iptal edilmiş testte örnek alınamaz.")
+            raise ValueError("Tamamlanmış testte örnek alınamaz!!!")
         self._collected_at = when or datetime.now()
         self._status = TestStatus.COLLECTED
         self._log("COLLECT", {"collected_at": self._collected_at.isoformat()})
@@ -147,27 +125,22 @@ class LabTest(ABC):
     def start_processing(self) -> None:
         self._ensure_not_cancelled()
         if self._status not in (TestStatus.COLLECTED, TestStatus.ORDERED):
-            raise ValueError("Test işlemeye başlamak için önce ordered/collected olmalı.")
+            raise ValueError("Test işlemeye başlamak için önce ordered/collected olmalı")
         self._status = TestStatus.IN_PROGRESS
         self._log("START", {"status": self._status.value})
 
     def cancel(self, reason: str = "") -> None:
         if self._status == TestStatus.COMPLETED:
-            raise ValueError("Tamamlanmış test iptal edilemez.")
+            raise ValueError("Tamamlanmış test iptal edilemez")
         self._status = TestStatus.CANCELLED
         self._log("CANCEL", {"reason": reason})
 
-    def set_result(self, result: Any, note: str = "") -> ResultStatus:
-        """
-        Sonuç girme (servis katmanı bunu çağırır).
 
-        - Subclass validate_result() ile doğrular.
-        - Subclass evaluate_criticality() ile kritik/normal belirler.
-        """
+    """Sonuç girmme """
+    def set_result(self, result: Any, note: str = "") -> ResultStatus:
         self._ensure_not_cancelled()
         if self._status != TestStatus.IN_PROGRESS:
-            # pratikte laboratuvar işlem başlatmadan sonuç girilmesini istemiyoruz
-            raise ValueError("Sonuç girmek için test IN_PROGRESS olmalı.")
+            raise ValueError("Sonuç girmek için test IN_PROGRESS olmalı")
 
         self.validate_result(result)
         self._result = result
@@ -187,9 +160,6 @@ class LabTest(ABC):
         return self._result_status
 
     def summary(self) -> Dict[str, Any]:
-        """
-        Kısa özet (repo/servis/demoda kullanılır).
-        """
         return {
             "test_id": self._test_id,
             "patient_id": self._patient_id,
@@ -206,32 +176,21 @@ class LabTest(ABC):
     def audit_trail(self) -> list[dict]:
         return list(self._audit)
 
-    # ----------------------------
-    # Abstract API (must override)
-    # ----------------------------
+    """ Sonucun formatını/kurallarını doğrular"""
     @abstractmethod
     def validate_result(self, result: Any) -> None:
-        """
-        Subclass: Sonucun formatını/kurallarını doğrular.
-        En az bir validation kuralı olmalı.
-        """
         raise NotImplementedError
 
+    """Sonucun durumunu belirler (kritik ya da değil)"""
     @abstractmethod
     def evaluate_criticality(self, result: Any) -> ResultStatus:
-        """
-        Subclass: Sonucun kritik olup olmadığını belirler.
-        """
         raise NotImplementedError
 
-    # ----------------------------
-    # Required: static & class methods
-    # ----------------------------
+
+    """Statik metot -- durum geçiş kontrolü"""
     @staticmethod
     def is_valid_status_transition(current: TestStatus, new: TestStatus) -> bool:
-        """
-        Statik metot: durum geçişi kontrolü.
-        """
+
         allowed = {
             TestStatus.ORDERED: {TestStatus.COLLECTED, TestStatus.IN_PROGRESS, TestStatus.CANCELLED},
             TestStatus.COLLECTED: {TestStatus.IN_PROGRESS, TestStatus.CANCELLED},
@@ -241,11 +200,11 @@ class LabTest(ABC):
         }
         return new in allowed.get(current, set())
 
+
+    """Class metot -- test türü oluşturma"""
     @classmethod
     def build_test_type(cls, base: str, suffix: str) -> str:
-        """
-        Class metot: test türü adlandırma standardı üretir.
-        """
+
         base = base.strip().upper().replace(" ", "_")
         suffix = suffix.strip().upper().replace(" ", "_")
         return f"{base}_{suffix}"
@@ -253,7 +212,7 @@ class LabTest(ABC):
 
     def _ensure_not_cancelled(self) -> None:
         if self._status == TestStatus.CANCELLED:
-            raise ValueError("İptal edilen test üzerinde işlem yapılamaz.")
+            raise ValueError("İptal edilen test üzerinde işlem yapılamaz")
 
     def _log(self, action: str, payload: Dict[str, Any]) -> None:
         self._audit.append(
