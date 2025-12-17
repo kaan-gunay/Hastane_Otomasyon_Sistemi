@@ -301,3 +301,4 @@ class StatisticsService:
     @classmethod
     def from_repo(cls, repo: InMemoryLabTestRepository) -> "StatisticsService":
         return cls(repo)
+    
