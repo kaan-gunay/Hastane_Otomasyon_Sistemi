@@ -32,7 +32,6 @@ class TestOrder:
         }
 
 
-
 """Test çıktısı"""
 @dataclass
 class LabReport:
