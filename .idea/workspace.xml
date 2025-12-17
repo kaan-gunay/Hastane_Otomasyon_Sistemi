@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b223eb73-40a3-4d6d-b80c-712b1554bb97" name="Changes" comment="impşementations ekleme(4)" />
+    <list default="true" id="b223eb73-40a3-4d6d-b80c-712b1554bb97" name="Changes" comment="implementations ekleme   (5)" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -31,12 +31,20 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Furkanzcan&quot;
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "history": [
+    {
+      "state": "OPEN",
+      "assignee": "Furkanzcan",
+      "author": "Furkanzcan"
+    }
+  ],
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Furkanzcan",
+    "author": "Furkanzcan"
   }
-}</component>
+}]]></component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/kaan-gunay/Hastane_Otomasyon_Sistemi.git&quot;,
@@ -189,7 +197,31 @@
       <option name="project" value="LOCAL" />
       <updated>1765984415077</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="impşementations ekleme -4">
+      <option name="closed" value="true" />
+      <created>1765984500871</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1765984500871</updated>
+    </task>
+    <task id="LOCAL-00009" summary="implementations ekleme (5)">
+      <option name="closed" value="true" />
+      <created>1765984674889</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1765984674889</updated>
+    </task>
+    <task id="LOCAL-00010" summary="implementations ekleme   (5)">
+      <option name="closed" value="true" />
+      <created>1765984858527</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1765984858527</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -210,6 +242,9 @@
     <MESSAGE value="Respository Başlangıç(2)" />
     <MESSAGE value="Repository ekleme ve Base düzeltme" />
     <MESSAGE value="impşementations ekleme(4)" />
-    <option name="LAST_COMMIT_MESSAGE" value="impşementations ekleme(4)" />
+    <MESSAGE value="impşementations ekleme -4" />
+    <MESSAGE value="implementations ekleme (5)" />
+    <MESSAGE value="implementations ekleme   (5)" />
+    <option name="LAST_COMMIT_MESSAGE" value="implementations ekleme   (5)" />
   </component>
 </project>
