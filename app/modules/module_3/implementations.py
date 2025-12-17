@@ -32,7 +32,6 @@ class TestOrder:
         }
 
 
-
 """Test çıktısı"""
 @dataclass
 class LabReport:
@@ -301,4 +300,3 @@ class StatisticsService:
     @classmethod
     def from_repo(cls, repo: InMemoryLabTestRepository) -> "StatisticsService":
         return cls(repo)
-    
