@@ -242,6 +242,7 @@ class AlertService:
                 return True
         return False
 
+
     @staticmethod
     def _severity_from_test(test: LabTest) -> str:
         name = type(test).__name__
@@ -268,7 +269,6 @@ class AlertService:
 
 """İstatistik/raporlama servisi."""
 class StatisticsService:
-
 
     def __init__(self, repo: InMemoryLabTestRepository) -> None:
         self._repo = repo
