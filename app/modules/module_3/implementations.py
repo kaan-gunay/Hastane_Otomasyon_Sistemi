@@ -266,7 +266,6 @@ class AlertService:
         return cls()
 
 
-
 """İstatistik/raporlama servisi."""
 class StatisticsService:
 
