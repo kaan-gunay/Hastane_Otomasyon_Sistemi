@@ -262,6 +262,7 @@ class BiopsyTest(LabTest):
         )
         return base
 
+
     @staticmethod
     def specimen_types() -> list[str]:
         return ["CORE", "EXCISIONAL", "FNA", "PUNCH"]
