@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from base import ResultStatus, TestStatus
 from repository import InMemoryLabTestRepository, JsonFileLabTestRepository
-from Subclasses import BloodTest, ImagingTest, BiopsyTest, ReferenceRange, NumericResult
+from subclasses import BloodTest, ImagingTest, BiopsyTest, ReferenceRange, NumericResult
 from base import LabTest
 
 """Doktorun test istemi için giriş."""
