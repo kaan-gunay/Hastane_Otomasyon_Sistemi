@@ -142,7 +142,7 @@ class RandevuBildirimServisi:
 
     # Randevu için bildirim gönderir.
     def gonder(self, randevu: AppointmentBase) -> Dict[str, Any]:
-        kayit = {"randevu_id": randevu.randevu_id, "hasta_id": randevu.hasta_id, "mesaj": randevu.bildirim_metni(), "zaman": datetime.utcnow().isoformat()}
+        kayit = {"randevu_id": randevu.randevu_id, "hasta_id": randevu.hasta_id, "mesaj": randevu.bildirim_metni(), "zaman": datetime.now().isoformat()}
         self._kayitlar.append(kayit)
         return kayit
 
@@ -296,7 +296,7 @@ class DenetimServisi:
         kayit = DenetimKaydi(
             olay=DenetimKaydi.olay_normalize(olay),
             hedef_id=(hedef_id or "").strip(),
-            zaman=datetime.utcnow().isoformat(),
+            zaman=datetime.now().isoformat(),
             detay=dict(detay or {}),
         )
         self._kayitlar.append(kayit)
