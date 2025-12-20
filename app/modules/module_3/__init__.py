@@ -1,5 +1,5 @@
 from base import LabTest, TestStatus, ResultStatus
-from subclasses import  BloodTest, ImagingTest, BiopsyTest
+from subclasses import BloodTest, ImagingTest, BiopsyTest
 from repository import (
     InMemoryLabTestRepository,
     JsonFileLabTestRepository,
