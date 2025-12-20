@@ -3,10 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
-from base import ReferenceRange, TestStatus, ResultStatus
-from implementations import LabTestService, AlertService, StatisticsService
-from subclasses import NumericResult, BloodTest, ImagingTest, BiopsyTest
-from base import LabTest
+from app.modules.module_3.base import ReferenceRange, TestStatus, ResultStatus, LabTest
+from app.modules.module_3.implementations import LabTestService, AlertService, StatisticsService
+from app.modules.module_3.subclasses import NumericResult, BloodTest, ImagingTest, BiopsyTest
 
 """polimorfizm örneği"""
 def polymorphism_demo(tests: List[LabTest]) -> None:
@@ -93,7 +92,7 @@ def main() -> None:
     print(rep.printable())
 
     # İstatistik
-    stats = StatisticsService.from_repo(service.repo)
+    stats = StatisticsService.from_repo(service._repo)
 
     print("\n5) İSTATİSTİK:")
     print("- by_type:", stats.count_by_type())

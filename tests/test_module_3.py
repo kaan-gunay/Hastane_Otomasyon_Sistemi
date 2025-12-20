@@ -28,7 +28,7 @@ class TestLaboratoryModule(unittest.TestCase):
     def test_status_flow(self):
         t = self.service.create_imaging_test(
             patient_id=2,
-            ordered_by="Dr. Y",
+            ordered_by="Dr. Furkan",
             modality="XRAY",
             body_part="Chest",
         )

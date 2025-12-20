@@ -4,10 +4,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from base import ResultStatus, TestStatus
-from repository import InMemoryLabTestRepository, JsonFileLabTestRepository
-from subclasses import BloodTest, ImagingTest, BiopsyTest, ReferenceRange, NumericResult
-from base import LabTest
+from app.modules.module_3.base import ResultStatus, TestStatus, LabTest
+from app.modules.module_3.repository import InMemoryLabTestRepository, JsonFileLabTestRepository
+from app.modules.module_3.subclasses import BloodTest, ImagingTest, BiopsyTest, ReferenceRange, NumericResult
 
 """Doktorun test istemi için giriş."""
 @dataclass
