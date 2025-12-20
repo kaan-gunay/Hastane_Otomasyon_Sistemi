@@ -92,7 +92,7 @@ class Hasta(ABC):
         if dogum_tarihi is not None:
             self.yas: int = self.yas_hesapla(dogum_tarihi)
         else:
-            self.yas = int(yas) if isinstance(yas, int) else int(yas or 0)
+            self.yas = int(yas) if yas is not None else 0
 
         self.iletisim: IletisimBilgisi = iletisim or IletisimBilgisi(
             telefon="Bilinmiyor",
