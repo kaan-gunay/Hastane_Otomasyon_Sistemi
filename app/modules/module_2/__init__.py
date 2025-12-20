@@ -1,1 +1,1 @@
-#Yeni Bulutlar grubu olarak Nesne projemizi yapıyoruz
+"""Modül 2"""
