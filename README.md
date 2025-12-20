@@ -43,7 +43,6 @@ tests/
 ├── test_module_2.py                 (Randevu modülü testleri)
 └── test_module_3.py                 (Laboratuvar modülü testleri)
 main.py                              (Ana giriş noktası)
-requirements.txt
 ```
 
 ## Ekip
