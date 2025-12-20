@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Iterable, Any, Tuple
 
 from base import LabTest, TestStatus, ResultStatus
-from Subclasses import BloodTest, ImagingTest, BiopsyTest, ReferenceRange, NumericResult
+from subclasses import BloodTest, ImagingTest, BiopsyTest, ReferenceRange, NumericResult
 
 """Ana Repositoryy"""
 class InMemoryLabTestRepository:
