@@ -104,6 +104,5 @@ def main() -> None:
     print("DEMO TAMAMLANDI")
     print("=" * 60)
 
-
 if __name__ == "__main__":
     main()
