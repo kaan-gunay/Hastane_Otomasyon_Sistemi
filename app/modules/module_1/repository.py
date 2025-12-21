@@ -1,10 +1,19 @@
 """
-Modül 1 - Repository Katmanı
-===========================
+-----------------------------------------------------------------------------
+SANAL VERİTABANI (RAM DATABASE)
+-----------------------------------------------------------------------------
 
-Hasta nesnelerini RAM üzerinde tutan basit depo sınıfı.
+ÖZET:
+Burası hastaların saklandığı sanal bir arşiv odasıdır.
+Gerçek bir veritabanı kurulana kadar verileri geçici olarak tutar.
+
+GÖREVLERİ:
+* [x] Hasta Ekleme
+* [x] Hasta Silme
+* [x] Arama Yapma (TC / ID)
+* [x] Listeyi Çekme
+-----------------------------------------------------------------------------
 """
-
 from __future__ import annotations
 
 from typing import (
