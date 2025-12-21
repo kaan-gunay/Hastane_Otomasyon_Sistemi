@@ -1,12 +1,25 @@
 """
-Modül 1 - Hasta Yönetim Sistemi (Base)
-=====================================
+================================================================================
+  HASTA YÖNETİM SİSTEMİ - BASE LAYER
+================================================================================
 
-Bu dosya, tüm hasta tipleri için kullanılacak TEMEL sınıfları içerir.
+  AÇIKLAMA:
+  Bu dosya, sistemin "Omurgasını" oluşturur. Polimorfizm (çok biçimlilik)
+  yapısının kurulduğu soyut temel sınıfları ve yardımcı veri modellerini barındırır.
 
-- Hasta sınıfı (soyut sınıf, tüm hastaların ortak özellikleri)
-- İlgili yardımcı veri yapıları (iletişim bilgisi, acil durum kişisi)
-- Küçük araç metotlar (yaş grubu, kısa kimlik, not ekleme, takip kaydı vb.)
+  SINIFLAR VE YAPILAR:
+  --------------------
+  * Hasta (ABC) ......: Tüm alt sınıflar için zorunlu şablon .
+                        (Kimlik, İletişim, Durum Takibi, Loglama mekanizmaları)
+
+  * IletisimBilgisi ..: Telefon, E-posta ve Adres verilerini paketler.
+  * AcilDurumKisisi ..: Acil durumlarda aranacak kişinin verilerini tutar.
+
+  KULLANIM AMACI:
+  Veritabanına kayıt öncesi nesne modellemesi ve iş kurallarının (Business Logic)
+  temel seviyede işletilmesi.
+
+================================================================================
 """
 
 from __future__ import annotations
@@ -49,23 +62,6 @@ class AcilDurumKisisi:
 
 
 class Hasta(ABC):
-    """
-    Tüm hasta tipleri için temel soyut sınıf.
-
-    Ortak alanlar:
-    - id, ad, yas, cinsiyet, durum
-    - tc_kimlik_no, dogum_tarihi
-    - oluşturulma/güncellenme zamanı
-    - iletişim ve acil durum kişisi
-    - notlar + takip kayıtları
-
-    Ortak metotlar:
-    - durum_guncelle
-    - not_ekle / tum_notlar / son_not
-    - takip_guncelle / tum_takip / son_takip
-    - yas_grubu, kisa_kimlik, to_dict
-    """
-
     _hasta_sayaci: int = 0
 
     def __init__(
@@ -85,7 +81,7 @@ class Hasta(ABC):
         self.cinsiyet: str = (cinsiyet or "").strip()
         self.durum: str = (durum or "").strip() or "kayıtlı"
 
-        self.tc_kimlik_no: Optional[str] = (tc_kimlik_no or "").strip() or None
+        self.tc_kimlik_no: Optional[str] = self.tc_kimlik_dogrula(tc_kimlik_no)
         self.dogum_tarihi: Optional[date] = dogum_tarihi
 
         # Yaş: dogum_tarihi varsa otomatik hesapla, yoksa verilen yas'ı kullan
@@ -216,7 +212,7 @@ class Hasta(ABC):
                 extra = ek()
                 if isinstance(extra, dict):
                     data.update(extra)
-            except Exception:
+            except Exception(TypeError, ValueError):
                 pass
 
         return data
@@ -240,6 +236,24 @@ class Hasta(ABC):
         if (bugun.month, bugun.day) < (dogum_tarihi.month, dogum_tarihi.day):
             yil_fark -= 1
         return yil_fark
+
+    @staticmethod
+    def tc_kimlik_dogrula(tc: Optional[str]) -> Optional[str]:
+
+        if tc is None:
+            return None
+
+        tc = str(tc).strip()
+        if not tc:
+            return None
+
+        if not tc.isdigit():
+            raise ValueError("TC Kimlik No sadece rakamlardan oluşmalıdır.")
+
+        if len(tc) != 11:
+            raise ValueError("TC Kimlik No 11 haneli olmalıdır.")
+
+        return tc
 
     # ------------------------------------------------------------------
     # Python temel davranışları

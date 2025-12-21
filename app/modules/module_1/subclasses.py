@@ -1,3 +1,19 @@
+"""
+################################################################################
+#                                                                              #
+#    MODÜL 1: ALT SINIFLAR (SUBCLASSES)                                        #
+#    ----------------------------------------------------------------------    #
+#                                                                              #
+#    Bu modül, projenin "Özelleşmiş" kısmıdır.                                 #
+#    Soyut 'Hasta' sınıfını alır ve gerçek hayattaki senaryolara uyarlar.      #
+#                                                                              #
+#    SINIFLAR:                                                                 #
+#    * YatanHasta  -> (Uzun süreli tedavi, fatura işlemleri)                   #
+#    * AyaktaHasta -> (Günübirlik muayene, randevu takibi)                     #
+#    * AcilHasta   -> (Hayati risk, triyaj/öncelik sistemi)                    #
+#                                                                              #
+################################################################################
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
