@@ -1,10 +1,10 @@
-"""
-Modül 1 - Hasta Yönetim Modülü
-==============================
-
-Bu paket, Akıllı Kampüs / Hastane Otomasyon projesi kapsamında
-hazırlanan "Hasta Yönetim Modülü"nü içerir.
-"""
+################################################################################
+#                                                                              #
+#    MODÜL ADI: HASTA YÖNETİM SİSTEMİ                                          #
+#    AÇIKLAMA : Bu modül hasta kayıt ve takibini sağlar.                       #
+#    YAZAR    : [Osman Şen]                                                    #
+#                                                                              #
+################################################################################
 
 from __future__ import annotations
 
@@ -20,27 +20,28 @@ from app.modules.module_1.subclasses import (
     AyaktaHasta,
     AcilHasta,
 )
-from app.modules.module_1.repository import HafizaHastaDeposu
-from app.modules.module_1.implementations import HastaKayitServisi
-
+from app.modules.module_1.repository import(
+    HafizaHastaDeposu
+)
+from app.modules.module_1.implementations import(
+    HastaKayitServisi
+)
 
 MODULE_ADI = "Hasta Yönetim Modülü"
 MODULE_KODU = "MODUL_1"
-MODULE_YAZAR = "Öğrenci"
+MODULE_YAZARI = "Osman"
 
 
 def modul_bilgisi() -> Dict[str, Any]:
     return {
         "ad": MODULE_ADI,
         "kod": MODULE_KODU,
-        "yazar": MODULE_YAZAR,
+        "yazar": MODULE_YAZARI,
     }
 
 
 def kur_hasta_modulu() -> HastaKayitServisi:
-    """
-    Varsayılan bir HastaKayitServisi örneği kurup döndürür.
-    """
+
     depo = HafizaHastaDeposu()
     servis = HastaKayitServisi(depo)
     return servis
@@ -63,5 +64,5 @@ __all__ = [
     "modul_bilgisi",
     "MODULE_ADI",
     "MODULE_KODU",
-    "MODULE_YAZAR",
+    "MODULE_YAZARI",
 ]

@@ -1,8 +1,26 @@
+"""
+MODÜL 1: İŞ MANTIKLARI (SERVİSLER)
+=============================================================================
+
+Bu dosya, uygulamanın "Beyni" olarak çalışır. Kullanıcıdan gelen ham veriler
+burada işlenir, kontrol edilir ve kayıt altına alınır.
+
+GÖREVLERİ:
+1. Doğrulama (Validation):
+   Girilen verilerin (TC, Ad, Yaş) kurallara uygun olup olmadığını denetler.
+
+2. Nesne Oluşturma:
+   Gelen veriye göre doğru hasta tipini (Yatan, Ayakta, Acil) üretir.
+
+3. Kayıt Yönetimi:
+   Hazırlanan hasta dosyasını 'Repository' (Depo) katmanına teslim eder.
+=============================================================================
+"""
 from __future__ import annotations
 
 from dataclasses import asdict, is_dataclass
 from statistics import mean
-from typing import List, Optional, Dict, Any, Iterable, Tuple, Callable
+from typing import List, Optional, Dict, Any, Iterable
 
 from app.modules.module_1.base import Hasta
 from app.modules.module_1.subclasses import YatanHasta, AyaktaHasta, AcilHasta
@@ -327,11 +345,12 @@ class HastaKayitServisi:
         }
 
     def rapor_uret(self) -> str:
-        satirlar: List[str] = []
-        satirlar.append("HASTA YÖNETİM MODÜLÜ RAPORU")
-        satirlar.append("-" * 40)
-        satirlar.append(f"Toplam hasta sayısı: {self.depo.sayim()}")
-        satirlar.append(f"Genel yaş ortalaması: {self.yas_ortalamasi():.1f} yaş")
+        satirlar: List[str] = [
+            "HASTA YÖNETİM MODÜLÜ RAPORU",
+            "-" * 40,
+            f"Toplam hasta sayısı: {self.depo.sayim()}",
+            f"Genel yaş ortalaması: {self.yas_ortalamasi():.1f} yaş",
+        ]
 
         durum_sayim = self.depo.duruma_gore_sayim()
         satirlar.append("")
