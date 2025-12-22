@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from base import LabTest, ReferenceRange, ResultStatus, TestStatus
+from app.modules.module_3.base import LabTest, ReferenceRange, ResultStatus, TestStatus
 
 
 """Kan testleri iöin sayısal sonuç"""

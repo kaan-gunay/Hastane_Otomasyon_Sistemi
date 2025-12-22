@@ -5,8 +5,8 @@ from dataclasses import asdict
 from datetime import datetime
 from typing import Dict, List, Optional, Iterable, Any, Tuple
 
-from base import LabTest, TestStatus, ResultStatus
-from subclasses import BloodTest, ImagingTest, BiopsyTest, ReferenceRange, NumericResult
+from app.modules.module_3.base import LabTest, TestStatus, ResultStatus
+from app.modules.module_3.subclasses import BloodTest, ImagingTest, BiopsyTest, ReferenceRange, NumericResult
 
 """Ana Repositoryy"""
 class InMemoryLabTestRepository:
